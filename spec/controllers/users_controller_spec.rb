@@ -45,6 +45,23 @@ describe UsersController do
         end
       end
 
+      it "delete link should not render" do
+        get :index
+        @users[0..2].each do |user|
+          response.should_not have_selector("a",
+                                            :content => "delete")
+        end
+      end
+
+      it "if admin, delete link should render" do
+        @admin = Factory(:user, :email => "admin@example.com", :admin => true)
+        test_sign_in(@admin)
+        get :index
+        @users[0..2].each do |user|
+          response.should have_selector("a", :content => "delete")
+        end
+      end
+
       it "should paginate users" do
         get :index
         response.should have_selector("div.pagination")
@@ -61,6 +78,9 @@ describe UsersController do
 
     before(:each) do
       @user = Factory(:user)
+      def @user.admin?
+        false
+      end
     end
 
     it "should be successful" do
@@ -317,14 +337,20 @@ describe UsersController do
     describe "as an admin user" do
 
       before(:each) do
-        admin = Factory(:user, :email => "admin@example.com", :admin => true)
-        test_sign_in(admin)
+        @admin = Factory(:user, :email => "admin@example.com", :admin => true)
+        test_sign_in(@admin)
       end
 
       it "should destroy the user" do
         lambda do
           delete :destroy, :id => @user
         end.should change(User, :count).by(-1)
+      end
+
+      it "should not destroy oneself" do
+        lambda do
+          delete:destroy, :id => @admin
+        end.should_not change(User, :count)
       end
 
       it "should redirect to the users page" do

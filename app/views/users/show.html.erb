@@ -8,6 +8,9 @@
     </td>
     <td class="sidebar round">
       <strong>Name</strong> <%= @user.name %><br />
+      <% if signed_in? && ( current_user?(@user) || current_user.admin? ) %>
+        <strong>Email</strong> <%= @user.email %><br /><br />
+      <% end %>
       <strong>URL</strong> <%= link_to user_path(@user), @user %>
     </td>
   </tr>
